@@ -54,6 +54,15 @@ class EasyLocalization extends StatefulWidget {
   /// ```
   final bool useFallbackTranslations;
 
+  /// If a localization key is empty in the locale file, try to use the fallbackLocale file.
+  /// Does not take effect if [useFallbackTranslations] is false.
+  /// @Default value false
+  /// Example:
+  /// ```
+  /// useFallbackTranslationsForEmptyResources: true
+  /// ```
+  final bool useFallbackTranslationsForEmptyResources;
+
   /// Path to your folder with localization files.
   /// Example:
   /// ```dart
@@ -107,6 +116,7 @@ class EasyLocalization extends StatefulWidget {
     this.startLocale,
     this.useOnlyLangCode = false,
     this.useFallbackTranslations = false,
+    this.useFallbackTranslationsForEmptyResources = false,
     this.assetLoader = const RootBundleAssetLoader(),
     this.extraAssetLoaders,
     this.saveLocale = true,
@@ -186,6 +196,8 @@ class _EasyLocalizationState extends State<EasyLocalization> {
       delegate: _EasyLocalizationDelegate(
         localizationController: localizationController,
         supportedLocales: widget.supportedLocales,
+        useFallbackTranslationsForEmptyResources:
+            widget.useFallbackTranslationsForEmptyResources,
       ),
     );
   }
@@ -265,12 +277,16 @@ class _EasyLocalizationProvider extends InheritedWidget {
 class _EasyLocalizationDelegate extends LocalizationsDelegate<Localization> {
   final List<Locale>? supportedLocales;
   final EasyLocalizationController? localizationController;
+  final bool useFallbackTranslationsForEmptyResources;
 
   ///  * use only the lang code to generate i18n file path like en.json or ar.json
   // final bool useOnlyLangCode;
 
-  _EasyLocalizationDelegate(
-      {this.localizationController, this.supportedLocales}) {
+  _EasyLocalizationDelegate({
+    required this.useFallbackTranslationsForEmptyResources,
+    this.localizationController,
+    this.supportedLocales,
+  }) {
     EasyLocalization.logger.debug('Init Localization Delegate');
   }
 
@@ -284,9 +300,13 @@ class _EasyLocalizationDelegate extends LocalizationsDelegate<Localization> {
       await localizationController!.loadTranslations();
     }
 
-    Localization.load(value,
-        translations: localizationController!.translations,
-        fallbackTranslations: localizationController!.fallbackTranslations);
+    Localization.load(
+      value,
+      translations: localizationController!.translations,
+      fallbackTranslations: localizationController!.fallbackTranslations,
+      useFallbackTranslationsForEmptyResources:
+          useFallbackTranslationsForEmptyResources,
+    );
     return Future.value(Localization.instance);
   }
 

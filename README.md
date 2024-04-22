@@ -146,6 +146,7 @@ class MyApp extends StatelessWidget {
 | startLocale             | false    |                           | Overrides device locale.                                                                                                                                                      |
 | saveLocale              | false    | `true`                    | Save locale in device storage.                                                                                                                                                |
 | useFallbackTranslations | false    | `false`                   | If a localization key is not found in the locale file, try to use the fallbackLocale file.                                                                                    |
+| useFallbackTranslationsForEmptyResources | false    | `false`                   | If translation is empty in the locale file, try to use the fallbackLocale file. Does not take effect if `useFallbackTranslations` is false.                  |
 | useOnlyLangCode         | false    | `false`                   | Trigger for using only language code for reading localization files.</br></br>Example:</br>`en.json //useOnlyLangCode: true`</br>`en-US.json //useOnlyLangCode: false`        |
 | errorWidget             | false    | `FutureErrorWidget()`     | Shows a custom error widget when an error occurs.                                                                                                                             |
 

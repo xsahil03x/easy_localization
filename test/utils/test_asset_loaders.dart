@@ -20,6 +20,7 @@ class JsonAssetLoader extends AssetLoader {
   Future<Map<String, dynamic>> load(String fullPath, Locale locale) {
     return Future.value({
       'test': 'test',
+      'test_empty': '',
       'test_replace_one': 'test replace {}',
       'test_replace_two': 'test replace {} {}',
       'test_replace_named': 'test named replace {arg1} {arg2}',
@@ -87,6 +88,7 @@ class JsonAssetLoader extends AssetLoader {
       'path': fullPath,
       'test_missing_fallback':
           (locale.languageCode == 'fb' ? 'fallback!' : null),
+      'test_empty_fallback': (locale.languageCode == 'fb' ? 'fallback!' : ''),
       'test_fallback_plurals': (locale.languageCode == 'fb'
           ? {
               'zero': 'fallback zero',
@@ -100,6 +102,40 @@ class JsonAssetLoader extends AssetLoader {
               'one': '{} second',
               'other': '{} seconds',
             }),
+      'test_empty_fallback_plurals': (locale.languageCode == 'fb'
+          ? {
+              'zero': 'fallback zero',
+              'one': 'fallback one',
+              'two': 'fallback two',
+              'few': 'fallback few',
+              'many': 'fallback many',
+              'other': 'fallback other',
+            }
+          : {
+              'zero': '',
+              'one': '',
+              'two': '',
+              'few': '',
+              'many': '',
+              'other': '',
+            }),
+      'test_empty_plurals': (locale.languageCode == 'fb'
+          ? {
+        'zero': '',
+        'one': '',
+        'two': '',
+        'few': '',
+        'many': '',
+        'other': '',
+      }
+          : {
+        'zero': '',
+        'one': '',
+        'two': '',
+        'few': '',
+        'many': '',
+        'other': '',
+      })
     });
   }
 }

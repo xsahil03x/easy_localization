@@ -1,5 +1,9 @@
 # Changelog
 
+### [3.0.6]
+
+- add 'useFallbackTranslationsForEmptyResources' to be able to use fallback locales for empty resources.
+
 ### [3.0.5]
 
 - add 'extraAssetLoaders' to add more assets loaders if it is needed, for example, if you want to add packages localizations to your project.

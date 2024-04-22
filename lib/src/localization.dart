@@ -19,6 +19,8 @@ class Localization {
     'capitalize': (String? val) => '${val![0].toUpperCase()}${val.substring(1)}'
   };
 
+  bool _useFallbackTranslationsForEmptyResources = false;
+
   Localization();
 
   static Localization? _instance;
@@ -30,10 +32,13 @@ class Localization {
     Locale locale, {
     Translations? translations,
     Translations? fallbackTranslations,
+    bool useFallbackTranslationsForEmptyResources = false,
   }) {
     instance._locale = locale;
     instance._translations = translations;
     instance._fallbackTranslations = fallbackTranslations;
+    instance._useFallbackTranslationsForEmptyResources =
+        useFallbackTranslationsForEmptyResources;
     return translations == null ? false : true;
   }
 
@@ -190,7 +195,8 @@ class Localization {
 
   String _resolve(String key, {bool logging = true, bool fallback = true}) {
     var resource = _translations?.get(key);
-    if (resource == null) {
+    if (resource == null ||
+        (_useFallbackTranslationsForEmptyResources && resource.isEmpty)) {
       if (logging) {
         EasyLocalization.logger.warning('Localization key [$key] not found');
       }
@@ -198,7 +204,8 @@ class Localization {
         return key;
       } else {
         resource = _fallbackTranslations?.get(key);
-        if (resource == null) {
+        if (resource == null ||
+            (_useFallbackTranslationsForEmptyResources && resource.isEmpty)) {
           if (logging) {
             EasyLocalization.logger
                 .warning('Fallback localization key [$key] not found');
@@ -210,7 +217,7 @@ class Localization {
     return resource;
   }
 
-  bool exists(String key){
+  bool exists(String key) {
     return _translations?.get(key) != null;
   }
 }

@@ -342,12 +342,18 @@ void main() {
             contains('Localization key [test_missing_fallback] not found'));
       }));
 
+      test('uses empty translation, not using fallback', overridePrint(() {
+        printLog = [];
+        expect(Localization.instance.tr('test_empty_fallback'), '');
+      }));
+
       test('returns resource and replaces argument', () {
         expect(
           Localization.instance.tr('test_replace_one', args: ['one']),
           'test replace one',
         );
       });
+
       test('returns resource and replaces argument in any nest level', () {
         expect(
           Localization.instance
@@ -411,10 +417,59 @@ void main() {
       });
     });
 
+    group('tr useFallbackTranslationsForEmptyResources', () {
+      var r = EasyLocalizationController(
+          forceLocale: const Locale('en'),
+          supportedLocales: const [Locale('en'), Locale('fb')],
+          fallbackLocale: const Locale('fb'),
+          path: 'path',
+          useOnlyLangCode: true,
+          useFallbackTranslations: true,
+          onLoadError: (FlutterError e) {
+            log(e.toString());
+          },
+          saveLocale: false,
+          assetLoader: const JsonAssetLoader());
+
+      setUpAll(() async {
+        await r.loadTranslations();
+        Localization.load(
+          const Locale('en'),
+          translations: r.translations,
+          fallbackTranslations: r.fallbackTranslations,
+          useFallbackTranslationsForEmptyResources: true,
+        );
+      });
+
+      test('uses fallback translations for empty resource', overridePrint(() {
+        printLog = [];
+        expect(Localization.instance.tr('test_empty_fallback'), 'fallback!');
+      }));
+
+      test('reports empty resource with fallback', overridePrint(() {
+        printLog = [];
+        expect(Localization.instance.tr('test_empty_fallback'), 'fallback!');
+        expect(printLog.first,
+            contains('Localization key [test_empty_fallback] not found'));
+      }));
+
+      test('reports empty resource', overridePrint(() {
+        printLog = [];
+        expect(Localization.instance.tr('test_empty'), 'test_empty');
+        final logIterator = printLog.iterator;
+        logIterator.moveNext();
+        expect(logIterator.current,
+            contains('Localization key [test_empty] not found'));
+        logIterator.moveNext();
+        expect(logIterator.current,
+            contains('Fallback localization key [test_empty] not found'));
+      }));
+    });
+
     group('plural', () {
       var r = EasyLocalizationController(
-          forceLocale: const Locale('fb'),
-          supportedLocales: [const Locale('fb')],
+          forceLocale: const Locale('en'),
+          supportedLocales: const [Locale('en'), Locale('fb')],
           fallbackLocale: const Locale('fb'),
           path: 'path',
           useOnlyLangCode: true,
@@ -469,6 +524,16 @@ void main() {
         expect(printLog, isEmpty);
       }));
 
+      test('two as fallback and fallback translations priority',
+          overridePrint(() {
+            printLog = [];
+            expect(
+              Localization.instance.plural('test_empty_fallback_plurals', 2),
+              '',
+            );
+            expect(printLog, isEmpty);
+          }));
+
       test('with number format', () {
         expect(
             Localization.instance
@@ -522,6 +587,69 @@ void main() {
           'John has 3 dollars',
         );
       });
+    });
+
+    group('plural useFallbackTranslationsForEmptyResources', () {
+      var r = EasyLocalizationController(
+          forceLocale: const Locale('en'),
+          supportedLocales: const [Locale('en'), Locale('fb')],
+          fallbackLocale: const Locale('fb'),
+          path: 'path',
+          useOnlyLangCode: true,
+          useFallbackTranslations: true,
+          onLoadError: (FlutterError e) {
+            log(e.toString());
+          },
+          saveLocale: false,
+          assetLoader: const JsonAssetLoader());
+
+      setUpAll(() async {
+        await r.loadTranslations();
+        Localization.load(
+          const Locale('fb'),
+          translations: r.translations,
+          fallbackTranslations: r.fallbackTranslations,
+          useFallbackTranslationsForEmptyResources: true,
+        );
+      });
+
+      test('two as fallback for empty resource and fallback translations priority',
+          overridePrint(() {
+        printLog = [];
+        expect(
+          Localization.instance.plural('test_empty_fallback_plurals', 2),
+          'fallback two',
+        );
+        expect(printLog, isEmpty);
+      }));
+
+      test('reports empty plural resource with fallback',
+          overridePrint(() {
+        printLog = [];
+        expect(
+          Localization.instance.plural('test_empty_fallback_plurals', -1),
+          'fallback other',
+        );
+        expect(
+            printLog.first,
+            contains(
+                'Localization key [test_empty_fallback_plurals.other] not found'));
+      }));
+
+      test('reports empty plural resource', overridePrint(() {
+        printLog = [];
+        expect(
+          Localization.instance.plural('test_empty_plurals', -1),
+          'test_empty_plurals.other',
+        );
+        final logIterator = printLog.iterator;
+        logIterator.moveNext();
+        expect(logIterator.current,
+            contains('Localization key [test_empty_plurals.other] not found'));
+        logIterator.moveNext();
+        expect(logIterator.current,
+            contains('Fallback localization key [test_empty_plurals.other] not found'));
+      }));
     });
 
     group('extensions', () {
