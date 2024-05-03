@@ -12,6 +12,7 @@ class EasyLocalizationController extends ChangeNotifier {
 
   late Locale _locale;
   Locale? _fallbackLocale;
+  List<Locale>? _supportedLocales;
 
   final Function(FlutterError e) onLoadError;
   final AssetLoader assetLoader;
@@ -38,6 +39,7 @@ class EasyLocalizationController extends ChangeNotifier {
     Locale? forceLocale, // used for testing
   }) {
     _fallbackLocale = fallbackLocale;
+    _supportedLocales = supportedLocales;
     if (forceLocale != null) {
       _locale = forceLocale;
     } else if (_savedLocale == null && startLocale != null) {
@@ -144,8 +146,9 @@ class EasyLocalizationController extends ChangeNotifier {
     final result = <String, dynamic>{};
     final loaderFutures = <Future<Map<String, dynamic>?>>[];
 
+    // need scriptCode, it might be better to use ignoreCountryCode as the variable name of useOnlyLangCode 
     final Locale desiredLocale =
-        useOnlyLangCode ? Locale(locale.languageCode) : locale;
+        useOnlyLangCode ? Locale.fromSubtags(languageCode: locale.languageCode, scriptCode: locale.scriptCode) : locale;
 
     List<AssetLoader> loaders = [
       assetLoader,
@@ -203,9 +206,10 @@ class EasyLocalizationController extends ChangeNotifier {
   Locale get deviceLocale => _deviceLocale;
 
   Future<void> resetLocale() async {
-    EasyLocalization.logger('Reset locale to platform locale $_deviceLocale');
+    final locale = selectLocaleFrom(_supportedLocales!, deviceLocale, fallbackLocale: _fallbackLocale);
 
-    await setLocale(_deviceLocale);
+    EasyLocalization.logger('Reset locale to $locale while the platform locale is $_deviceLocale and the fallback locale is $_fallbackLocale');
+    await setLocale(locale);
   }
 }
 
