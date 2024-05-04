@@ -204,6 +204,7 @@ class EasyLocalizationController extends ChangeNotifier {
   }
 
   Locale get deviceLocale => _deviceLocale;
+  Locale? get savedLocale => _savedLocale;
 
   Future<void> resetLocale() async {
     final locale = selectLocaleFrom(_supportedLocales!, deviceLocale, fallbackLocale: _fallbackLocale);
