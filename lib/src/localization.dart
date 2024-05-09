@@ -20,11 +20,14 @@ class Localization {
   };
 
   bool _useFallbackTranslationsForEmptyResources = false;
+  bool _ignorePluralRules = false;
 
   Localization();
 
   static Localization? _instance;
+
   static Localization get instance => _instance ?? (_instance = Localization());
+
   static Localization? of(BuildContext context) =>
       Localizations.of<Localization>(context, Localization);
 
@@ -33,12 +36,14 @@ class Localization {
     Translations? translations,
     Translations? fallbackTranslations,
     bool useFallbackTranslationsForEmptyResources = false,
+    bool ignorePluralRules = true,
   }) {
     instance._locale = locale;
     instance._translations = translations;
     instance._fallbackTranslations = fallbackTranslations;
     instance._useFallbackTranslationsForEmptyResources =
         useFallbackTranslationsForEmptyResources;
+    instance._ignorePluralRules = ignorePluralRules;
     return translations == null ? false : true;
   }
 
@@ -114,6 +119,9 @@ class Localization {
   }
 
   static PluralRule? _pluralRule(String? locale, num howMany) {
+    if (instance._ignorePluralRules) {
+      return () => _pluralCaseFallback(howMany);
+    }
     startRuleEvaluation(howMany);
     return pluralRules[locale];
   }
@@ -139,7 +147,6 @@ class Localization {
     String? name,
     NumberFormat? format,
   }) {
-
     late String res;
 
     final pluralRule = _pluralRule(_locale.languageCode, value);
