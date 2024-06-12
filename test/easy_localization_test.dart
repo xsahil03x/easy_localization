@@ -225,6 +225,38 @@ void main() {
           zhHans,
         );
       });
+
+      // New
+      test('select best lenguage match if no perfect match exists', () { // #674
+        const userDeviceLocale = Locale('en', 'FR');
+        const supportedLocale1 = Locale('en', 'US');
+        const supportedLocale2 = Locale('zh', 'CN');
+
+        expect(
+          EasyLocalizationController.selectLocaleFrom(
+            [supportedLocale1, supportedLocale2],
+            userDeviceLocale,
+            fallbackLocale: supportedLocale2,
+          ),
+          supportedLocale1,
+        );
+      });
+
+      test('select perfect match if exists', () { // #674
+        const userDeviceLocale = Locale('en', 'GB');
+        const supportedLocale1 = Locale('en', 'US');
+        const supportedLocale2 = userDeviceLocale;
+
+        expect(
+          EasyLocalizationController.selectLocaleFrom(
+            [supportedLocale1, supportedLocale2],
+            userDeviceLocale,
+            fallbackLocale: supportedLocale2,
+          ),
+          supportedLocale2,
+        );
+      });
+      // end new
     });
 
     group('tr', () {
@@ -526,13 +558,13 @@ void main() {
 
       test('two as fallback and fallback translations priority',
           overridePrint(() {
-            printLog = [];
-            expect(
-              Localization.instance.plural('test_empty_fallback_plurals', 2),
-              '',
-            );
-            expect(printLog, isEmpty);
-          }));
+        printLog = [];
+        expect(
+          Localization.instance.plural('test_empty_fallback_plurals', 2),
+          '',
+        );
+        expect(printLog, isEmpty);
+      }));
 
       test('with number format', () {
         expect(
@@ -613,7 +645,8 @@ void main() {
         );
       });
 
-      test('two as fallback for empty resource and fallback translations priority',
+      test(
+          'two as fallback for empty resource and fallback translations priority',
           overridePrint(() {
         printLog = [];
         expect(
@@ -623,8 +656,7 @@ void main() {
         expect(printLog, isEmpty);
       }));
 
-      test('reports empty plural resource with fallback',
-          overridePrint(() {
+      test('reports empty plural resource with fallback', overridePrint(() {
         printLog = [];
         expect(
           Localization.instance.plural('test_empty_fallback_plurals', -1),
@@ -647,8 +679,10 @@ void main() {
         expect(logIterator.current,
             contains('Localization key [test_empty_plurals.other] not found'));
         logIterator.moveNext();
-        expect(logIterator.current,
-            contains('Fallback localization key [test_empty_plurals.other] not found'));
+        expect(
+            logIterator.current,
+            contains(
+                'Fallback localization key [test_empty_plurals.other] not found'));
       }));
     });
 

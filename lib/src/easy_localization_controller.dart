@@ -72,14 +72,29 @@ class EasyLocalizationController extends ChangeNotifier {
   }) {
     final selectedLocale = supportedLocales.firstWhere(
       (locale) => locale.supports(deviceLocale),
-      orElse: () => _getFallbackLocale(supportedLocales, fallbackLocale),
+      orElse: () => _getFallbackLocale(
+        supportedLocales,
+        fallbackLocale,
+        deviceLocale: deviceLocale,
+      ),
     );
     return selectedLocale;
   }
 
   //Get fallback Locale
   static Locale _getFallbackLocale(
-      List<Locale> supportedLocales, Locale? fallbackLocale) {
+      List<Locale> supportedLocales, Locale? fallbackLocale,
+      {final Locale? deviceLocale}) {
+    if (deviceLocale != null) {
+      // a locale that matches the language code of the device locale is
+      // preferred over the fallback locale
+      final deviceLanguage = deviceLocale.languageCode;
+      for (Locale locale in supportedLocales) {
+        if (locale.languageCode == deviceLanguage) {
+          return locale;
+        }
+      }
+    }
     //If fallbackLocale not set then return first from supportedLocales
     if (fallbackLocale != null) {
       return fallbackLocale;
@@ -146,9 +161,11 @@ class EasyLocalizationController extends ChangeNotifier {
     final result = <String, dynamic>{};
     final loaderFutures = <Future<Map<String, dynamic>?>>[];
 
-    // need scriptCode, it might be better to use ignoreCountryCode as the variable name of useOnlyLangCode 
-    final Locale desiredLocale =
-        useOnlyLangCode ? Locale.fromSubtags(languageCode: locale.languageCode, scriptCode: locale.scriptCode) : locale;
+    // need scriptCode, it might be better to use ignoreCountryCode as the variable name of useOnlyLangCode
+    final Locale desiredLocale = useOnlyLangCode
+        ? Locale.fromSubtags(
+            languageCode: locale.languageCode, scriptCode: locale.scriptCode)
+        : locale;
 
     List<AssetLoader> loaders = [
       assetLoader,
@@ -207,9 +224,11 @@ class EasyLocalizationController extends ChangeNotifier {
   Locale? get savedLocale => _savedLocale;
 
   Future<void> resetLocale() async {
-    final locale = selectLocaleFrom(_supportedLocales!, deviceLocale, fallbackLocale: _fallbackLocale);
+    final locale = selectLocaleFrom(_supportedLocales!, deviceLocale,
+        fallbackLocale: _fallbackLocale);
 
-    EasyLocalization.logger('Reset locale to $locale while the platform locale is $_deviceLocale and the fallback locale is $_fallbackLocale');
+    EasyLocalization.logger(
+        'Reset locale to $locale while the platform locale is $_deviceLocale and the fallback locale is $_fallbackLocale');
     await setLocale(locale);
   }
 }
