@@ -161,7 +161,7 @@ class EasyLocalizationController extends ChangeNotifier {
     final result = <String, dynamic>{};
     final loaderFutures = <Future<Map<String, dynamic>?>>[];
 
-    // need scriptCode, it might be better to use ignoreCountryCode as the variable name of useOnlyLangCode
+    // need scriptCode, it might be better to use ignoreCountryCode as the variable name of useOnlyLangCode 
     final Locale desiredLocale =
         useOnlyLangCode ? Locale.fromSubtags(languageCode: locale.languageCode, scriptCode: locale.scriptCode) : locale;
 

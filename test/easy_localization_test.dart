@@ -226,7 +226,6 @@ void main() {
         );
       });
 
-      // New
       test('select best lenguage match if no perfect match exists', () { // #674
         const userDeviceLocale = Locale('en', 'FR');
         const supportedLocale1 = Locale('en', 'US');
@@ -256,7 +255,6 @@ void main() {
           supportedLocale2,
         );
       });
-      // end new
     });
 
     group('tr', () {
@@ -558,7 +556,7 @@ void main() {
 
       test('two as fallback and fallback translations priority',
           overridePrint(() {
-                    printLog = [];
+            printLog = [];
             expect(
               Localization.instance.plural('test_empty_fallback_plurals', 2),
               '',
