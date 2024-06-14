@@ -255,13 +255,13 @@ class CodegenLoader extends AssetLoader{
   for (var file in files) {
     final localeName =
         path.basename(file.path).replaceFirst('.json', '').replaceAll('-', '_');
-    listLocales.add('"$localeName": $localeName');
+    listLocales.add('"$localeName": _$localeName');
     final fileData = File(file.path);
 
     Map<String, dynamic>? data = json.decode(await fileData.readAsString());
 
     final mapString = const JsonEncoder.withIndent('  ').convert(data);
-    gFile += 'static const Map<String,dynamic> $localeName = $mapString;\n';
+    gFile += 'static const Map<String,dynamic> _$localeName = $mapString;\n';
   }
 
   gFile +=
