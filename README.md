@@ -317,6 +317,29 @@ var money = plural('money_named_args', 10.23, namedArgs: {'name': 'Jane', 'money
 var money = plural('money_named_args', 10.23, namedArgs: {'name': 'Jane'}, name: 'money')  // output: Jane has 10.23 dollars
 ```
 
+### ⚙️ Configuring Plural Rules with `ignorePluralRules`
+
+In some languages, pluralization is simple and only involves using zero, one, two, and other forms, without needing to handle the `few` or `many` categories.  
+By default, `easy_localization` ignores the `few` and `many` plural forms and uses just the zero, one, two, and other forms.
+
+If you want to enable the handling of the `few` and `many` plural categories for specific languages, you can configure the `ignorePluralRules` flag to `false` in the `EasyLocalization` initialization.
+
+Here’s how to configure it:
+
+```dart
+EasyLocalization(
+  ignorePluralRules: false, // Set this line to false to enable 'few' and 'many' plural categories
+  supportedLocales: [Locale('en', 'US'), Locale('de', 'DE')],
+  path: 'assets/translations',
+  fallbackLocale: Locale('en', 'US'),
+  child: MyApp()
+)
+```
+
+Setting `ignorePluralRules: false` will enable the `few` and `many` plural categories, allowing your translations to handle all plural forms, including `few` and `many`, for supported languages.
+
+
+
 ### 🔥 Linked translations:
 
 If there's a translation key that will always have the same concrete text as another one you can just link to it. To link to another translation key, all you have to do is to prefix its contents with an `@:` sign followed by the full name of the translation key including the namespace you want to link to.
