@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
+
 import 'plural_rules.dart';
 import 'translations.dart';
 
@@ -18,10 +19,15 @@ class Localization {
     'capitalize': (String? val) => '${val![0].toUpperCase()}${val.substring(1)}'
   };
 
+  bool _useFallbackTranslationsForEmptyResources = false;
+  bool _ignorePluralRules = false;
+
   Localization();
 
   static Localization? _instance;
+
   static Localization get instance => _instance ?? (_instance = Localization());
+
   static Localization? of(BuildContext context) =>
       Localizations.of<Localization>(context, Localization);
 
@@ -29,10 +35,15 @@ class Localization {
     Locale locale, {
     Translations? translations,
     Translations? fallbackTranslations,
+    bool useFallbackTranslationsForEmptyResources = false,
+    bool ignorePluralRules = true,
   }) {
     instance._locale = locale;
     instance._translations = translations;
     instance._fallbackTranslations = fallbackTranslations;
+    instance._useFallbackTranslationsForEmptyResources =
+        useFallbackTranslationsForEmptyResources;
+    instance._ignorePluralRules = ignorePluralRules;
     return translations == null ? false : true;
   }
 
@@ -94,7 +105,9 @@ class Localization {
 
   String _replaceArgs(String res, List<String>? args) {
     if (args == null || args.isEmpty) return res;
-    args.forEach((String str) => res = res.replaceFirst(_replaceArgRegex, str));
+    for (var str in args) {
+      res = res.replaceFirst(_replaceArgRegex, str);
+    }
     return res;
   }
 
@@ -106,8 +119,24 @@ class Localization {
   }
 
   static PluralRule? _pluralRule(String? locale, num howMany) {
+    if (instance._ignorePluralRules) {
+      return () => _pluralCaseFallback(howMany);
+    }
     startRuleEvaluation(howMany);
     return pluralRules[locale];
+  }
+
+  static PluralCase _pluralCaseFallback(num value) {
+    switch (value) {
+      case 0:
+        return PluralCase.ZERO;
+      case 1:
+        return PluralCase.ONE;
+      case 2:
+        return PluralCase.TWO;
+      default:
+        return PluralCase.OTHER;
+    }
   }
 
   String plural(
@@ -118,22 +147,11 @@ class Localization {
     String? name,
     NumberFormat? format,
   }) {
-    late var pluralCase;
-    late var res;
-    var pluralRule = _pluralRule(_locale.languageCode, value);
-    switch (value) {
-      case 0:
-        pluralCase = PluralCase.ZERO;
-        break;
-      case 1:
-        pluralCase = PluralCase.ONE;
-        break;
-      case 2:
-        pluralCase = PluralCase.TWO;
-        break;
-      default:
-        pluralCase = pluralRule!();
-    }
+    late String res;
+
+    final pluralRule = _pluralRule(_locale.languageCode, value);
+    final pluralCase = pluralRule != null ? pluralRule() : _pluralCaseFallback(value);
+
     switch (pluralCase) {
       case PluralCase.ZERO:
         res = _resolvePlural(key, 'zero');
@@ -168,29 +186,33 @@ class Localization {
   }
 
   String _gender(String key, {required String gender}) {
-    return _resolve(key + '.$gender');
+    return _resolve('$key.$gender');
   }
 
   String _resolvePlural(String key, String subKey) {
+    if (subKey == 'other') return _resolve('$key.other');
+
     final tag = '$key.$subKey';
-    var resource = _resolve(tag);
-    if (resource == tag && subKey != 'other') {
+    var resource = _resolve(tag, logging: false, fallback: _fallbackTranslations != null);
+    if (resource == tag) {
       resource = _resolve('$key.other');
     }
     return resource;
   }
 
-  String _resolve(String key, {bool logging = true}) {
+  String _resolve(String key, {bool logging = true, bool fallback = true}) {
     var resource = _translations?.get(key);
-    if (resource == null) {
+    if (resource == null ||
+        (_useFallbackTranslationsForEmptyResources && resource.isEmpty)) {
       if (logging) {
         EasyLocalization.logger.warning('Localization key [$key] not found');
       }
-      if (_fallbackTranslations == null) {
+      if (_fallbackTranslations == null || !fallback) {
         return key;
       } else {
         resource = _fallbackTranslations?.get(key);
-        if (resource == null) {
+        if (resource == null ||
+            (_useFallbackTranslationsForEmptyResources && resource.isEmpty)) {
           if (logging) {
             EasyLocalization.logger
                 .warning('Fallback localization key [$key] not found');
@@ -200,5 +222,9 @@ class Localization {
       }
     }
     return resource;
+  }
+
+  bool exists(String key) {
+    return _translations?.get(key) != null;
   }
 }

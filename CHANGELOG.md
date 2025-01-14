@@ -1,5 +1,38 @@
 # Changelog
 
+### [3.0.7]
+
+- add _supportedLocales in EasyLocalizationController; log and check the deviceLocale when resetLocale;
+- add scriptCode to desiredLocale if useOnlyLangCode is true. scriptCode is needed sometimes, for example zh-Hans, zh-Hant
+- add savedLocale get method for context. if context.savedLocale is null, then language option is `following system`, i can display the option in user selection form.
+
+### [3.0.6]
+
+- add 'useFallbackTranslationsForEmptyResources' to be able to use fallback locales for empty resources.
+
+### [3.0.5]
+
+- add 'extraAssetLoaders' to add more assets loaders if it is needed, for example, if you want to add packages localizations to your project.
+
+### [3.0.4]
+
+- determine plural cases based on the actual language rules (#620)
+- update intl to 0.19.0 (#638)
+
+### [3.0.3]
+
+- replace log() with stdout.writeln()
+
+### [3.0.2]
+
+- support intl 18
+- support dart 3
+- added trExists extension
+- fix: handle invalid saved local
+- handle null returned by assetLoader
+- improve parsing scriptCode from local string
+- add tr-extension on build context
+
 ### [3.0.1]
 
 - added option allowing skip keys of nested object

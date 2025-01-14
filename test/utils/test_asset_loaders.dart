@@ -2,6 +2,17 @@ import 'dart:ui';
 
 import 'package:easy_localization/src/asset_loader.dart';
 
+class ImmutableJsonAssetLoader extends AssetLoader {
+  const ImmutableJsonAssetLoader();
+
+  @override
+  Future<Map<String, dynamic>> load(String fullPath, Locale locale) {
+    return Future.value(const {
+      'test': 'test',
+    });
+  }
+}
+
 class JsonAssetLoader extends AssetLoader {
   const JsonAssetLoader();
 
@@ -9,6 +20,7 @@ class JsonAssetLoader extends AssetLoader {
   Future<Map<String, dynamic>> load(String fullPath, Locale locale) {
     return Future.value({
       'test': 'test',
+      'test_empty': '',
       'test_replace_one': 'test replace {}',
       'test_replace_two': 'test replace {} {}',
       'test_replace_named': 'test named replace {arg1} {arg2}',
@@ -33,9 +45,7 @@ class JsonAssetLoader extends AssetLoader {
         'many': 'many hats',
         'other': 'other hats'
       },
-      'hat_other': {
-        'other': 'other hats'
-      },
+      'hat_other': {'other': 'other hats'},
       'money': {
         'zero': '{} has no money',
         'one': '{} has {} dollar',
@@ -75,9 +85,83 @@ class JsonAssetLoader extends AssetLoader {
           }
         }
       },
-      'path': '$fullPath',
+      'path': fullPath,
       'test_missing_fallback':
           (locale.languageCode == 'fb' ? 'fallback!' : null),
+      'test_empty_fallback': (locale.languageCode == 'fb' ? 'fallback!' : ''),
+      'test_fallback_plurals': (locale.languageCode == 'fb'
+          ? {
+              'zero': 'fallback zero',
+              'one': 'fallback one',
+              'two': 'fallback two',
+              'few': 'fallback few',
+              'many': 'fallback many',
+              'other': 'fallback other',
+            }
+          : {
+              'one': '{} second',
+              'other': '{} seconds',
+            }),
+      'test_empty_fallback_plurals': (locale.languageCode == 'fb'
+          ? {
+              'zero': 'fallback zero',
+              'one': 'fallback one',
+              'two': 'fallback two',
+              'few': 'fallback few',
+              'many': 'fallback many',
+              'other': 'fallback other',
+            }
+          : {
+              'zero': '',
+              'one': '',
+              'two': '',
+              'few': '',
+              'many': '',
+              'other': '',
+            }),
+      'test_empty_plurals': (locale.languageCode == 'fb'
+          ? {
+        'zero': '',
+        'one': '',
+        'two': '',
+        'few': '',
+        'many': '',
+        'other': '',
+      }
+          : {
+        'zero': '',
+        'one': '',
+        'two': '',
+        'few': '',
+        'many': '',
+        'other': '',
+      })
     });
   }
+}
+
+class ExternalAssetLoader extends AssetLoader {
+  const ExternalAssetLoader();
+
+  @override
+  Future<Map<String, dynamic>> load(String fullPath, Locale locale) =>
+      Future.value(const {
+        'package_value_01': 'package_value_01',
+        'package_value_02': 'package_value_02',
+        'package_value_03': 'package_value_03',
+      });
+}
+
+class NestedAssetLoader extends AssetLoader {
+  const NestedAssetLoader();
+
+  @override
+  Future<Map<String, dynamic>> load(String fullPath, Locale locale) =>
+      Future.value({
+        'nested': {
+          'super': {
+            'duper': {'nested': 'nested.super.duper.nested'}
+          }
+        },
+      });
 }

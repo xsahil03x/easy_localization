@@ -1,3 +1,5 @@
+[![Stand With Palestine](https://raw.githubusercontent.com/TheBSD/StandWithPalestine/main/banner-no-action.svg)](https://thebsd.github.io/StandWithPalestine)
+
 <p align="center"><img src="https://raw.githubusercontent.com/aissat/easy_localization/develop/logo/logo.svg?sanitize=true" width="600"/></p>
 <h1 align="center"> 
 Easy and Fast internationalization for your Flutter Apps
@@ -19,6 +21,7 @@ Easy and Fast internationalization for your Flutter Apps
 ![GitHub license](https://img.shields.io/github/license/aissat/easy_localization?style=flat-square)
 ![Sponsors](https://img.shields.io/opencollective/all/flutter_easy_localization?style=flat-square)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)
+[![StandWithPalestine](https://raw.githubusercontent.com/TheBSD/StandWithPalestine/main/badges/StandWithPalestine.svg)](https://github.com/TheBSD/StandWithPalestine/blob/main/docs/README.md)
 
 ## Why easy_localization?
 
@@ -138,10 +141,12 @@ class MyApp extends StatelessWidget {
 | supportedLocales        | true     |                           | List of supported locales.                                                                                                                                                    |
 | path                    | true     |                           | Path to your folder with localization files.                                                                                                                                  |
 | assetLoader             | false    | `RootBundleAssetLoader()` | Class loader for localization files. You can use custom loaders from [Easy Localization Loader](https://github.com/aissat/easy_localization_loader) or create your own class. |
+| extraAssetLoaders       | false    | null                      | A List of asset loaders, in case of needing assets being loaded from a different module or package. (e.g. adding a package that uses [Easy Localization Loader]).             |
 | fallbackLocale          | false    |                           | Returns the locale when the locale is not in the list `supportedLocales`.                                                                                                     |
 | startLocale             | false    |                           | Overrides device locale.                                                                                                                                                      |
 | saveLocale              | false    | `true`                    | Save locale in device storage.                                                                                                                                                |
 | useFallbackTranslations | false    | `false`                   | If a localization key is not found in the locale file, try to use the fallbackLocale file.                                                                                    |
+| useFallbackTranslationsForEmptyResources | false    | `false`                   | If translation is empty in the locale file, try to use the fallbackLocale file. Does not take effect if `useFallbackTranslations` is false.                  |
 | useOnlyLangCode         | false    | `false`                   | Trigger for using only language code for reading localization files.</br></br>Example:</br>`en.json //useOnlyLangCode: true`</br>`en-US.json //useOnlyLangCode: false`        |
 | errorWidget             | false    | `FutureErrorWidget()`     | Shows a custom error widget when an error occurs.                                                                                                                             |
 
@@ -180,11 +185,19 @@ context.setLocale(Locale('en', 'US'));
 print(context.locale.toString());
 ```
 
-### 🔥 Translate `tr()`
+### 🔥 Translate `context.tr()`
 
 Main function for translate your language keys
 
 You can use extension methods of [String] or [Text] widget, you can also use `tr()` as a static function.
+
+```dart
+Text(context.tr('title'))
+```
+
+You can also use tr() without [Context] as a static function.
+
+This is not recommend in build methods, because the widget won't rebuild when the language changes.
 
 ```dart
 Text('title').tr() //Text widget
@@ -293,6 +306,9 @@ print('day'.plural(21)); // output: 21 день
 //Static function
 var money = plural('money', 10.23) // output: You have 10.23 dollars
 
+//Text widget with plural BuildContext extension
+Text(context.plural('money', 10.23))
+
 //Static function with arguments
 var money = plural('money_args', 10.23, args: ['John', '10.23'])  // output: John has 10.23 dollars
 
@@ -300,6 +316,29 @@ var money = plural('money_args', 10.23, args: ['John', '10.23'])  // output: Joh
 var money = plural('money_named_args', 10.23, namedArgs: {'name': 'Jane', 'money': '10.23'})  // output: Jane has 10.23 dollars
 var money = plural('money_named_args', 10.23, namedArgs: {'name': 'Jane'}, name: 'money')  // output: Jane has 10.23 dollars
 ```
+
+### ⚙️ Configuring Plural Rules with `ignorePluralRules`
+
+In some languages, pluralization is simple and only involves using zero, one, two, and other forms, without needing to handle the `few` or `many` categories.  
+By default, `easy_localization` ignores the `few` and `many` plural forms and uses just the zero, one, two, and other forms.
+
+If you want to enable the handling of the `few` and `many` plural categories for specific languages, you can configure the `ignorePluralRules` flag to `false` in the `EasyLocalization` initialization.
+
+Here’s how to configure it:
+
+```dart
+EasyLocalization(
+  ignorePluralRules: false, // Set this line to false to enable 'few' and 'many' plural categories
+  supportedLocales: [Locale('en', 'US'), Locale('de', 'DE')],
+  path: 'assets/translations',
+  fallbackLocale: Locale('en', 'US'),
+  child: MyApp()
+)
+```
+
+Setting `ignorePluralRules: false` will enable the `few` and `many` plural categories, allowing your translations to handle all plural forms, including `few` and `many`, for supported languages.
+
+
 
 ### 🔥 Linked translations:
 
@@ -390,7 +429,7 @@ Get device locale
 Example:
 
 ```dart
-print(${context.deviceLocale.toString()}) // OUTPUT: en_US
+print(context.deviceLocale.toString()) // OUTPUT: en_US
 ```
 
 ### 🔥 Delete save locale `deleteSaveLocale()`
@@ -461,6 +500,25 @@ Steps:
   ```
   
 4. All done!
+
+### 📦 Localization support for multi module/package project
+
+If you want to add localization support from other modules and packages you can add them via `extraAssetLoaders` parameter:
+
+```dart
+  void main(){
+    runApp(EasyLocalization(
+      child: MyApp(),
+      supportedLocales: [Locale('en', 'US'), Locale('ar', 'DZ')],
+      path: 'resources/langs',
+      assetLoader: CodegenLoader()
+      extraAssetLoaders: [
+        TranslationsLoader(packageName: 'package_example_1'),
+        TranslationsLoader(packageName: 'package_example_2'),
+      ],
+    ));
+  }
+```
 
 ### 🔑 Localization keys
 

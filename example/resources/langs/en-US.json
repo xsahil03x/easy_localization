@@ -11,12 +11,10 @@
         }
     },
     "clicked": {
-        "zero": "You clicked {} times!",
-        "one": "You clicked {} time!",
-        "two": "You clicked {} times!",
-        "few": "You clicked {} times!",
-        "many": "You clicked {} times!",
-        "other": "You clicked {} times!"
+        "zero": "You didn't click yet!",
+        "few": "You clicked a few times ({})!",
+        "many": "You clicked many times ({})!",
+        "other": "You clicked {} time(s)!"
     },
     "amount": {
         "zero": "Your amount : {} ",

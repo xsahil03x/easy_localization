@@ -30,7 +30,7 @@ bool _isHelpCommand(List<String> args) {
 
 void _printHelperDisplay() {
   var parser = _generateArgParser(null);
-  print(parser.usage);
+  stdout.writeln(parser.usage);
 }
 
 GenerateOptions _generateOption(List<String> args) {
@@ -108,7 +108,7 @@ void handleLangFiles(GenerateOptions options) async {
       Directory(path.join(current.path, output.path, options.outputFile));
 
   if (!await sourcePath.exists()) {
-    printError('Source path does not exist');
+    stderr.writeln('Source path does not exist');
     return;
   }
 
@@ -116,7 +116,7 @@ void handleLangFiles(GenerateOptions options) async {
   if (options.sourceFile != null) {
     final sourceFile = File(path.join(source.path, options.sourceFile));
     if (!await sourceFile.exists()) {
-      printError('Source file does not exist (${sourceFile.toString()})');
+      stderr.writeln('Source file does not exist (${sourceFile.toString()})');
       return;
     }
     files = [sourceFile];
@@ -128,7 +128,7 @@ void handleLangFiles(GenerateOptions options) async {
   if (files.isNotEmpty) {
     generateFile(files, outputPath, options);
   } else {
-    printError('Source path empty');
+    stderr.writeln('Source path empty');
   }
 }
 
@@ -161,19 +161,21 @@ void generateFile(List<FileSystemEntity> files, Directory outputPath,
     //   await _writeCsv(classBuilder, files);
     // break;
     default:
-      printError('Format not support');
+      stderr.writeln('Format not supported');
   }
 
   classBuilder.writeln('}');
   generatedFile.writeAsStringSync(classBuilder.toString());
 
-  printInfo('All done! File generated in ${outputPath.path}');
+  stdout.writeln('All done! File generated in ${outputPath.path}');
 }
 
 Future _writeKeys(StringBuffer classBuilder, List<FileSystemEntity> files,
     bool? skipUnnecessaryKeys) async {
   var file = '''
 // DO NOT EDIT. This is code generated via package:easy_localization/generate.dart
+
+// ignore_for_file: constant_identifier_names
 
 abstract class  LocaleKeys {
 ''';
@@ -219,7 +221,7 @@ String _resolve(Map<String, dynamic> translations, bool? skipUnnecessaryKeys,
     if (!_preservedKeywords.contains(key)) {
       accKey != null && !ignoreKey
           ? fileContent +=
-              '  static const ${accKey.replaceAll('.', '_')}\_$key = \'$accKey.$key\';\n'
+              '  static const ${accKey.replaceAll('.', '_')}_$key = \'$accKey.$key\';\n'
           : !ignoreKey
               ? fileContent += '  static const $key = \'$key\';\n'
               : null;
@@ -234,7 +236,7 @@ Future _writeJson(
   var gFile = '''
 // DO NOT EDIT. This is code generated via package:easy_localization/generate.dart
 
-// ignore_for_file: prefer_single_quotes
+// ignore_for_file: prefer_single_quotes, avoid_renaming_method_parameters, constant_identifier_names
 
 import 'dart:ui';
 
@@ -244,7 +246,7 @@ class CodegenLoader extends AssetLoader{
   const CodegenLoader();
 
   @override
-  Future<Map<String, dynamic>> load(String fullPath, Locale locale ) {
+  Future<Map<String, dynamic>?> load(String path, Locale locale) {
     return Future.value(mapLocales[locale.toString()]);
   }
 
@@ -255,17 +257,17 @@ class CodegenLoader extends AssetLoader{
   for (var file in files) {
     final localeName =
         path.basename(file.path).replaceFirst('.json', '').replaceAll('-', '_');
-    listLocales.add('"$localeName": $localeName');
+    listLocales.add('"$localeName": _$localeName');
     final fileData = File(file.path);
 
     Map<String, dynamic>? data = json.decode(await fileData.readAsString());
 
-    final mapString = JsonEncoder.withIndent('  ').convert(data);
-    gFile += 'static const Map<String,dynamic> $localeName = $mapString;\n';
+    final mapString = const JsonEncoder.withIndent('  ').convert(data);
+    gFile += 'static const Map<String,dynamic> _$localeName = $mapString;\n';
   }
 
   gFile +=
-      'static const Map<String, Map<String,dynamic>> mapLocales = \{${listLocales.join(', ')}\};';
+      'static const Map<String, Map<String,dynamic>> mapLocales = {${listLocales.join(', ')}};';
   classBuilder.writeln(gFile);
 }
 
@@ -288,11 +290,3 @@ class CodegenLoader extends AssetLoader{
 //       '  static const Map<String, Map<String,dynamic>> mapLocales = \{${listLocales.join(', ')}\};');
 
 // }
-
-void printInfo(String info) {
-  print('\u001b[32measy localization: $info\u001b[0m');
-}
-
-void printError(String error) {
-  print('\u001b[31m[ERROR] easy localization: $error\u001b[0m');
-}
